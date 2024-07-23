@@ -1,0 +1,22 @@
+# Ambiente Virtual do Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Arquivos de Log
+logs/
+*.log
+
+# Arquivos Temporários
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Diretórios do Sistema
+.idea/
+.vscode/
+
+#outros
+model/
