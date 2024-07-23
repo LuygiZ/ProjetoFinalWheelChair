@@ -45,7 +45,7 @@ def predict_action(audio, sr):
 # Função para enviar o comando ao servidor
 def send_command_to_server(action):
     url = 'http://localhost:3000/direcao'  # URL do servidor
-    data = {'direcao': action}
+    data = {'direcao': action, 'source': 'voice'}
     try:
         response = requests.post(url, json=data)
         if response.status_code == 200:
@@ -54,6 +54,7 @@ def send_command_to_server(action):
             print(f"Falha ao enviar comando: {response.status_code}")
     except Exception as e:
         print(f"Erro ao enviar comando: {e}")
+
 
 # Configurações de gravação
 chunk = 1024

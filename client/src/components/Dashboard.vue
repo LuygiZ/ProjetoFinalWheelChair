@@ -2,6 +2,12 @@
   <div>
     <JoystickControl @speedChange="updateSpeed" @command="handleCommand" />
     <ArrowSimulator ref="arrowSimulator" :speed="speed" />
+
+    <!-- Seção para mostrar a orientação atual da seta -->
+    <div id="current-orientation">
+      <span>Orientação Atual: {{ currentOrientation }}</span>
+    </div>
+
     <div id="arrow-controls">
       <div class="row">
         <div class="key" :class="{ active: activeKey === 'ArrowUp' }" @mousedown="handleKeyDown({ key: 'ArrowUp' })" @mouseup="handleKeyUp">↑</div>
@@ -12,6 +18,7 @@
         <div class="key" :class="{ active: activeKey === 'ArrowRight' }" @mousedown="handleKeyDown({ key: 'ArrowRight' })" @mouseup="handleKeyUp">→</div>
       </div>
     </div>
+
     <div id="speed-controls">
       <button @click="decreaseSpeed">-</button>
       <span>Speed: x{{ speed }}</span>
@@ -23,14 +30,18 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { io } from 'socket.io-client';  // Importar socket.io-client
 import axios from 'axios';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
+
+const socket = io('http://localhost:3000');  // Conectar ao servidor websocket
 
 const workInProgressProjects = ref([]);
 const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);
 const activeKey = ref(null); // Estado para a tecla ativa
+const currentOrientation = ref('Parado'); // Nova variável para armazenar a orientação atual
 
 onMounted(async () => {
   try {
@@ -42,11 +53,17 @@ onMounted(async () => {
   }
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
+
+  // Ouvir os comandos do servidor
+  socket.on('direcao', (data) => {
+    handleCommand(data.direcao);
+  });
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('keyup', handleKeyUp);
+  socket.off('direcao');  // Remover o listener quando o componente é desmontado
 });
 
 const updateSpeed = (newSpeed) => {
@@ -56,6 +73,8 @@ const updateSpeed = (newSpeed) => {
 const handleCommand = (command) => {
   if (arrowSimulator.value) {
     arrowSimulator.value.updatePosition(command);
+    // Atualizar a orientação atual com base no ArrowSimulator
+    currentOrientation.value = arrowSimulator.value.getOrientation();
   }
 };
 
@@ -96,13 +115,26 @@ const decreaseSpeed = () => {
 </script>
 
 <style>
+#current-orientation {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%); /* Centraliza horizontalmente */
+  background-color: white; /* Adiciona um fundo para destacar o texto */
+  padding: 10px; /* Adiciona espaçamento ao redor do texto */
+  border-radius: 5px; /* Adiciona bordas arredondadas */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Adiciona uma sombra para destaque */
+  font-size: 18px; /* Ajusta o tamanho da fonte */
+  font-weight: bold; /* Deixa o texto em negrito */
+  z-index: 1000; /* Garante que fique sobre outros elementos */
+}
+
 #arrow-controls {
   display: flex;
   flex-direction: column;
   align-items: center;
   position: fixed;
   bottom: 80px; /* Ajuste conforme necessário */
-  right: 30px; /* Ajuste conforme necessário */
+  right: 20px; /* Ajuste conforme necessário */
   background-color: white; /* Adiciona um fundo para destacar os botões */
   padding: 10px; /* Adiciona espaçamento ao redor dos botões */
   border-radius: 5px; /* Adiciona bordas arredondadas */
