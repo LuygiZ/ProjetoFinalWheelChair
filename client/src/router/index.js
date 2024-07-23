@@ -11,6 +11,7 @@ import ProjectTasks from "../components/projects/ProjectTasks.vue"
 import Task from "../components/tasks/Task.vue"
 import Project from "../components/projects/Project.vue"
 
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

@@ -1,27 +1,26 @@
 <script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
+import { RouterLink, RouterView } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 
-const workInProgressProjects = ref([])
+const workInProgressProjects = ref([]);
 onMounted(async () => {
   try {
-    const userId = 1
-    const response = await axios.get("users/" + userId + "/projects/inprogress")
-    workInProgressProjects.value = response.data.data
+    const userId = 1;
+    const response = await axios.get('users/' + userId + '/projects/inprogress');
+    workInProgressProjects.value = response.data.data;
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-})
+});
 </script>
-
 
 <template>
   <nav class="navbar navbar-expand-md navbar-dark bg-dark sticky-top flex-md-nowrap p-0 shadow">
     <div class="container-fluid">
       <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="#">
         <img src="@/assets/logo.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
-        App name
+        Smart WheelChair
       </a>
       <button id="buttonSidebarExpandId" class="navbar-toggler" type="button" data-bs-toggle="collapse"
         data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,8 +35,7 @@ onMounted(async () => {
             </a>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" :class="{ active: $route.name === 'Login' }" 
-                          :to="{ name: 'Login' }">
+            <router-link class="nav-link" :class="{ active: $route.name === 'Login' }" :to="{ name: 'Login' }">
               <i class="bi bi-box-arrow-in-right"></i>
               Login
             </router-link>
@@ -58,7 +56,7 @@ onMounted(async () => {
                 </router-link>
               </li>
               <li>
-                <router-link class="dropdown-item" :class="{ active: $route.name === 'ChangePassword' }" 
+                <router-link class="dropdown-item" :class="{ active: $route.name === 'ChangePassword' }"
                               :to="{ name: 'ChangePassword' }">
                   <i class="bi bi-key-fill"></i>
                   Change password
@@ -83,22 +81,19 @@ onMounted(async () => {
         <div class="position-sticky pt-3">
           <ul class="nav flex-column">
             <li class="nav-item">
-              <router-link class="nav-link" :class="{ active: $route.name === 'Dashboard' }" 
-                          :to="{ name: 'Dashboard' }">
+              <router-link class="nav-link" :class="{ active: $route.name === 'Dashboard' }" :to="{ name: 'Dashboard' }">
                 <i class="bi bi-house"></i>
                 Control Center
               </router-link>
             </li>
             <li class="nav-item">
-                <router-link class="nav-link" :class="{ active: $route.name === 'CurrentTasks' }" 
-                            :to="{ name: 'CurrentTasks' }">
-                  <i class="bi bi-list-stars"></i>
-                  Current Tasks
-                </router-link>
+              <router-link class="nav-link" :class="{ active: $route.name === 'CurrentTasks' }" :to="{ name: 'CurrentTasks' }">
+                <i class="bi bi-list-stars"></i>
+                Current Tasks
+              </router-link>
             </li>
             <li class="nav-item d-flex justify-content-between align-items-center pe-3">
-              <router-link class="nav-link w-100 me-3" :class="{ active: $route.name === 'Tasks' }" 
-                          :to="{ name: 'Tasks' }">
+              <router-link class="nav-link w-100 me-3" :class="{ active: $route.name === 'Tasks' }" :to="{ name: 'Tasks' }">
                 <i class="bi bi-list-check"></i>
                 Tasks
               </router-link>
@@ -107,18 +102,16 @@ onMounted(async () => {
               </router-link>
             </li>
             <li class="nav-item">
-                <router-link class="nav-link" :class="{ active: $route.name === 'Projects' }" 
-                            :to="{ name: 'Projects' }">
-                  <i class="bi bi-files"></i>
-                    Projects
-                </router-link>
+              <router-link class="nav-link" :class="{ active: $route.name === 'Projects' }" :to="{ name: 'Projects' }">
+                <i class="bi bi-files"></i>
+                Projects
+              </router-link>
             </li>
             <li class="nav-item">
-                <router-link class="nav-link" :class="{ active: $route.name === 'Users' }" 
-                            :to="{ name: 'Users' }">
-                  <i class="bi bi-files"></i>
-                    Team Members
-                </router-link>
+              <router-link class="nav-link" :class="{ active: $route.name === 'Users' }" :to="{ name: 'Users' }">
+                <i class="bi bi-files"></i>
+                Team Members
+              </router-link>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="#">
@@ -130,14 +123,13 @@ onMounted(async () => {
 
           <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
             <span>My Projects</span>
-            <router-link
-              class="link-secondary" :to="{ name: 'NewProject' }" aria-label="Add a new project">
+            <router-link class="link-secondary" :to="{ name: 'NewProject' }" aria-label="Add a new project">
               <i class="bi bi-xs bi-plus-circle"></i>
             </router-link>
           </h6>
           <ul class="nav flex-column mb-2">
             <li class="nav-item" v-for="prj in workInProgressProjects" :key="prj.id">
-              <router-link class="nav-link w-100 me-3" 
+              <router-link class="nav-link w-100 me-3"
                 :class="{ active: $route.name == 'ProjectTasks' && $route.params.id == prj.id }"
                 :to="{ name: 'ProjectTasks', params: { id: prj.id } }">
                 <i class="bi bi-file-ruled"></i>
@@ -157,8 +149,7 @@ onMounted(async () => {
                 </a>
               </li>
               <li class="nav-item">
-                <router-link class="nav-link" :class="{ active: $route.name === 'Login' }" 
-                              :to="{ name: 'Login' }">
+                <router-link class="nav-link" :class="{ active: $route.name === 'Login' }" :to="{ name: 'Login' }">
                   <i class="bi bi-box-arrow-in-right"></i>
                   Login
                 </router-link>
@@ -179,7 +170,7 @@ onMounted(async () => {
                       </router-link>
                   </li>
                   <li>
-                    <router-link class="dropdown-item" :class="{ active: $route.name === 'ChangePassword' }" 
+                    <router-link class="dropdown-item" :class="{ active: $route.name === 'ChangePassword' }"
                                   :to="{ name: 'ChangePassword' }">
                       <i class="bi bi-key-fill"></i>
                       Change password
