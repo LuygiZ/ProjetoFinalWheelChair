@@ -1,10 +1,28 @@
 import os
+import sys
+import signal
 import numpy as np
 import pyaudio
 import librosa
 import tensorflow as tf
 from keras.models import load_model
 import requests
+
+# Definir a codificação padrão para UTF-8
+sys.stdout.reconfigure(encoding='utf-8')
+sys.stderr.reconfigure(encoding='utf-8')
+
+# Variável global para controlar a execução do script
+running = True
+
+def signal_handler(sig, frame):
+    global running
+    print('Stopping voice recognition...')
+    running = False
+
+# Registrar o manipulador de sinal para SIGINT e SIGTERM
+signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGTERM, signal_handler)
 
 # Função para verificar silêncio
 def is_silence(data, threshold):
@@ -24,7 +42,7 @@ def preprocess_audio(audio, sr, max_len=128):
     return mel_spectrogram
 
 # Carregar o modelo
-model_path = 'voice_command_modelV2.h5'  # Substitua pelo caminho correto do seu modelo .h5
+model_path = 'voiceCommands/voice_command_modelV2.h5'  # Substitua pelo caminho correto do seu modelo .h5
 model = load_model(model_path)
 
 # Mapeamento de índices para palavras
@@ -55,7 +73,6 @@ def send_command_to_server(action):
     except Exception as e:
         print(f"Erro ao enviar comando: {e}")
 
-
 # Configurações de gravação
 chunk = 1024
 form = pyaudio.paInt16
@@ -76,7 +93,7 @@ silent_chunks = 0
 recording = False
 
 try:
-    while True:
+    while running:
         data = stream.read(chunk)
         if not is_silence(data, threshold):
             if not recording:
@@ -100,9 +117,11 @@ try:
 
 except KeyboardInterrupt:
     pass
+except Exception as e:
+    print(f"Erro durante a execução: {e}")
 
-print("Encerrando...")
-
-stream.stop_stream()
-stream.close()
-audio.terminate()
+finally:
+    print("Encerrando...")
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()

@@ -17,11 +17,17 @@
         <div class="key" :class="{ active: activeKey === 'ArrowRight' }" @mousedown="handleKeyDown({ key: 'ArrowRight' })" @mouseup="handleKeyUp">→</div>
       </div>
     </div>
+
+    <!-- Ícone de microfone -->
+    <div id="microphone-icon" @click="toggleVoiceRecognition">
+      🎤
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref } from 'vue';
+import axios from 'axios';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
 
@@ -29,6 +35,7 @@ const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);
 const activeKey = ref(null); // Estado para a tecla ativa
 const currentOrientation = ref('Parado'); // Nova variável para armazenar a orientação atual
+const isVoiceRecognitionActive = ref(false); // Estado para controle do reconhecimento de voz
 
 const updateSpeed = (newSpeed) => {
   speed.value = newSpeed;
@@ -66,6 +73,28 @@ const handleKeyDown = (event) => {
 const handleKeyUp = () => {
   handleCommand('stop');
   activeKey.value = null;
+};
+
+const toggleVoiceRecognition = () => {
+  if (isVoiceRecognitionActive.value) {
+    axios.post('http://localhost:3000/stop-voice-recognition')
+      .then(response => {
+        console.log('Voice recognition stopped:', response.data);
+        isVoiceRecognitionActive.value = false;
+      })
+      .catch(error => {
+        console.error('Error stopping voice recognition:', error);
+      });
+  } else {
+    axios.post('http://localhost:3000/start-voice-recognition')
+      .then(response => {
+        console.log('Voice recognition started:', response.data);
+        isVoiceRecognitionActive.value = true;
+      })
+      .catch(error => {
+        console.error('Error starting voice recognition:', error);
+      });
+  }
 };
 </script>
 
@@ -118,5 +147,17 @@ const handleKeyUp = () => {
 #arrow-controls .key.active {
   background-color: gray;
   color: white;
+}
+
+#microphone-icon {
+  position: fixed;
+  bottom: 20px;
+  right: 230px;
+  background-color: white;
+  padding: 10px;
+  border-radius: 50%;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  font-size: 24px;
+  cursor: pointer;
 }
 </style>
