@@ -102,12 +102,6 @@ onMounted(async () => {
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link class="nav-link" :class="{ active: $route.name === 'Projects' }" :to="{ name: 'Projects' }">
-                <i class="bi bi-files"></i>
-                Projects
-              </router-link>
-            </li>
-            <li class="nav-item">
               <router-link class="nav-link" :class="{ active: $route.name === 'Users' }" :to="{ name: 'Users' }">
                 <i class="bi bi-files"></i>
                 Team Members
@@ -122,7 +116,7 @@ onMounted(async () => {
           </ul>
 
           <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-            <span>My Projects</span>
+            <span>My Pacients</span>
             <router-link class="link-secondary" :to="{ name: 'NewProject' }" aria-label="Add a new project">
               <i class="bi bi-xs bi-plus-circle"></i>
             </router-link>

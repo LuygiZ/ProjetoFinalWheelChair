@@ -79,25 +79,18 @@ const handleKeyUp = () => {
 };
 
 const toggleVoiceRecognition = () => {
-  if (isVoiceRecognitionActive.value) {
-    axios.post('http://localhost:3000/stop-voice-recognition')
-      .then(response => {
-        console.log('Voice recognition stopped:', response.data);
-        isVoiceRecognitionActive.value = false;
-      })
-      .catch(error => {
-        console.error('Error stopping voice recognition:', error);
-      });
-  } else {
-    axios.post('http://localhost:3000/start-voice-recognition')
-      .then(response => {
-        console.log('Voice recognition started:', response.data);
-        isVoiceRecognitionActive.value = true;
-      })
-      .catch(error => {
-        console.error('Error starting voice recognition:', error);
-      });
-  }
+  const url = isVoiceRecognitionActive.value 
+    ? 'http://localhost:3000/stop-voice-recognition' 
+    : 'http://localhost:3000/start-voice-recognition';
+
+  axios.post(url)
+    .then(response => {
+      console.log(`${isVoiceRecognitionActive.value ? 'Voice recognition stopped' : 'Voice recognition started'}:`, response.data);
+      isVoiceRecognitionActive.value = !isVoiceRecognitionActive.value;
+    })
+    .catch(error => {
+      console.error(`Error ${isVoiceRecognitionActive.value ? 'stopping' : 'starting'} voice recognition:`, error);
+    });
 };
 
 const handleVoiceRecognitionReady = (message) => {

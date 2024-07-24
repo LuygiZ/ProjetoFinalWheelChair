@@ -35,6 +35,8 @@ export default {
     const containerWidth = ref(0);
     const containerHeight = ref(0);
     const speed = ref(props.speed);
+    const isReversing = ref(false);
+    const movementInterval = ref(null);
 
     const socket = io('http://localhost:3000');  // Substitua pelo IP do seu Raspberry Pi
 
@@ -52,6 +54,7 @@ export default {
     onBeforeUnmount(() => {
       window.removeEventListener('resize', updateContainerSize);
       socket.off('direcao_voice');
+      clearMovementInterval();
     });
 
     watch(() => props.speed, (newSpeed) => {
@@ -67,19 +70,20 @@ export default {
     const handleVoiceCommand = (command) => {
       switch (command) {
         case 'direita':
-          updatePosition('right');
+          startMoving('right');
           break;
         case 'esquerda':
-          updatePosition('left');
+          startMoving('left');
           break;
         case 'frente':
-          updatePosition('up');
+          startMoving('up');
           break;
         case 'tras':
-          updatePosition('down');
+          startReversing();
           break;
         case 'parar':
-          updatePosition('stop');
+          stopMoving();
+          stopReversing();
           break;
         case 'mais':
           increaseSpeed();
@@ -92,14 +96,18 @@ export default {
       }
     };
 
-    const updatePosition = (command) => {
-      const step = 20 * speed.value; // Multiplicar o passo pela velocidade atual
+    const updatePosition = (direction) => {
+      const step = 20 * speed.value;
       const previousX = x.value;
       const previousY = y.value;
       let newX = x.value;
       let newY = y.value;
 
-      switch (command) {
+      if (isReversing.value) {
+        stopReversing();
+      }
+
+      switch (direction) {
         case 'up':
           newY -= step;
           angle.value = 0;
@@ -117,41 +125,70 @@ export default {
           angle.value = 90;
           break;
         case 'stop':
-          return; // Return early to avoid adding a line
+          return; // Não faz nada ao parar
       }
 
-      // Verificar se a nova posição está dentro dos limites
       if (newX >= -containerWidth.value / 2 && newX <= containerWidth.value / 2 && newY >= -containerHeight.value / 2 && newY <= containerHeight.value / 2) {
-        if (history.value.length > 0) {
-          const lastPosition = history.value[history.value.length - 1];
-          if (lastPosition.x === newX && lastPosition.y === newY) {
-            // Remover a última linha se a nova posição for a mesma que a anterior
-            lines.value.pop();
-            history.value.pop();
-          } else {
-            // Adicionar nova linha e posição ao histórico
-            lines.value.push({
-              x1: previousX + containerWidth.value / 2,
-              y1: previousY + containerHeight.value / 2,
-              x2: newX + containerWidth.value / 2,
-              y2: newY + containerHeight.value / 2,
-            });
-            history.value.push({ x: previousX, y: previousY });
-          }
-        } else {
-          // Adicionar nova linha e posição ao histórico
-          lines.value.push({
-            x1: previousX + containerWidth.value / 2,
-            y1: previousY + containerHeight.value / 2,
-            x2: newX + containerWidth.value / 2,
-            y2: newY + containerHeight.value / 2,
-          });
-          history.value.push({ x: previousX, y: previousY });
-        }
+        lines.value.push({
+          x1: previousX + containerWidth.value / 2,
+          y1: previousY + containerHeight.value / 2,
+          x2: newX + containerWidth.value / 2,
+          y2: newY + containerHeight.value / 2,
+        });
+        history.value.push({ x: newX, y: newY });
 
-        // Atualizar a posição
         x.value = newX;
         y.value = newY;
+      }
+    };
+
+    const startMoving = (direction) => {
+      if (movementInterval.value) {
+        clearMovementInterval();
+      }
+      movementInterval.value = setInterval(() => {
+        updatePosition(direction);
+      }, 1000 / speed.value);
+    };
+
+    const stopMoving = () => {
+      clearMovementInterval();
+    };
+
+    const startReversing = () => {
+      if (isReversing.value || history.value.length === 0) return;
+      stopMoving();
+      isReversing.value = true;
+      reverseStep();
+    };
+
+    const stopReversing = () => {
+      isReversing.value = false;
+    };
+
+    const reverseStep = () => {
+      if (!isReversing.value || history.value.length === 0) return;
+
+      const lastPosition = history.value.pop();
+      const previousX = x.value;
+      const previousY = y.value;
+
+      lines.value.pop();
+
+      x.value = lastPosition.x;
+      y.value = lastPosition.y;
+
+      if (isReversing.value && history.value.length > 0) {
+        setTimeout(reverseStep, 1000 / speed.value);
+      } else {
+        stopReversing();
+      }
+    };
+
+    const clearMovementInterval = () => {
+      if (movementInterval.value) {
+        clearInterval(movementInterval.value);
+        movementInterval.value = null;
       }
     };
 
@@ -171,15 +208,15 @@ export default {
     };
 
     const increaseSpeed = () => {
-      const newSpeed = Math.min(speed.value + 0.5, 5); // Aumentar a velocidade em 0.5, limite máximo 5
-      socket.emit('speed_change', newSpeed);  // Emitir evento de mudança de velocidade
+      const newSpeed = Math.min(speed.value + 0.5, 5);
+      socket.emit('speed_change', newSpeed);
       speed.value = newSpeed;
       emit('speedChange', newSpeed);
     };
 
     const decreaseSpeed = () => {
-      const newSpeed = Math.max(speed.value - 0.5, 0.5); // Diminuir a velocidade em 0.5, limite mínimo 0.5
-      socket.emit('speed_change', newSpeed);  // Emitir evento de mudança de velocidade
+      const newSpeed = Math.max(speed.value - 0.5, 0.5);
+      socket.emit('speed_change', newSpeed);
       speed.value = newSpeed;
       emit('speedChange', newSpeed);
     };
@@ -193,10 +230,14 @@ export default {
       containerHeight,
       speed,
       updatePosition,
-      getOrientation,
       updateContainerSize,
       increaseSpeed,
       decreaseSpeed,
+      startReversing,
+      stopReversing,
+      startMoving,
+      stopMoving,
+      getOrientation,
     };
   },
   computed: {
