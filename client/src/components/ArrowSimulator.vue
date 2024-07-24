@@ -10,6 +10,9 @@
 </template>
 
 <script>
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { io } from 'socket.io-client';
+
 export default {
   name: 'ArrowSimulator',
   props: {
@@ -18,107 +21,126 @@ export default {
       default: 1
     }
   },
-  data() {
-    return {
-      x: 0,
-      y: 0,
-      angle: 0,
-      lines: [],
-      history: [], // Histórico das posições
-      containerWidth: 0,
-      containerHeight: 0,
+  setup(props) {
+    const x = ref(0);
+    const y = ref(0);
+    const angle = ref(0);
+    const lines = ref([]);
+    const history = ref([]); // Histórico das posições
+    const containerWidth = ref(0);
+    const containerHeight = ref(0);
+
+    const socket = io('http://localhost:3000');
+
+    onMounted(() => {
+      updateContainerSize();
+      window.addEventListener('resize', updateContainerSize);
+
+      // Ouvir os comandos do servidor
+      socket.on('direcao_voice', (command) => {
+        console.log(`Comando de voz recebido: ${command}`);
+        handleVoiceCommand(command);
+      });
+    });
+
+    onBeforeUnmount(() => {
+      window.removeEventListener('resize', updateContainerSize);
+      socket.off('direcao_voice');
+    });
+
+    const updateContainerSize = () => {
+      const container = document.getElementById('arrow-container');
+      containerWidth.value = container.clientWidth;
+      containerHeight.value = container.clientHeight;
     };
-  },
-  computed: {
-    arrowStyle() {
-      return {
-        transform: `translate(${this.x}px, ${this.y}px) rotate(${this.angle}deg)`,
-      };
-    },
-  },
-  mounted() {
-    this.updateContainerSize();
-    window.addEventListener('resize', this.updateContainerSize);
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.updateContainerSize);
-  },
-  watch: {
-    speed(newSpeed) {
-      console.log(`Speed changed to: ${newSpeed}`); // Para depuração
-    }
-  },
-  methods: {
-    updateContainerSize() {
-      const container = this.$el;
-      this.containerWidth = container.clientWidth;
-      this.containerHeight = container.clientHeight;
-    },
-    updatePosition(command) {
-      const step = 20 * this.speed; // Multiplicar o passo pela velocidade atual
-      const previousX = this.x;
-      const previousY = this.y;
-      let newX = this.x;
-      let newY = this.y;
-  
+
+    const handleVoiceCommand = (command) => {
+      switch (command) {
+        case 'direita':
+          updatePosition('right');
+          break;
+        case 'esquerda':
+          updatePosition('left');
+          break;
+        case 'frente':
+          updatePosition('up');
+          break;
+        case 'tras':
+          updatePosition('down');
+          break;
+        case 'parar':
+          updatePosition('stop');
+          break;
+        default:
+          console.log(`Comando desconhecido: ${command}`);
+      }
+    };
+
+    const updatePosition = (command) => {
+      const step = 20 * props.speed; // Multiplicar o passo pela velocidade atual
+      const previousX = x.value;
+      const previousY = y.value;
+      let newX = x.value;
+      let newY = y.value;
+
       switch (command) {
         case 'up':
           newY -= step;
-          this.angle = 0;
+          angle.value = 0;
           break;
         case 'down':
           newY += step;
-          this.angle = 180;
+          angle.value = 180;
           break;
         case 'left':
           newX -= step;
-          this.angle = -90;
+          angle.value = -90;
           break;
         case 'right':
           newX += step;
-          this.angle = 90;
+          angle.value = 90;
           break;
         case 'stop':
-          // No action needed for stop command
           return; // Return early to avoid adding a line
       }
-  
+
       // Verificar se a nova posição está dentro dos limites
-      if (newX >= -this.containerWidth / 2 && newX <= this.containerWidth / 2 && newY >= -this.containerHeight / 2 && newY <= this.containerHeight / 2) {
-        if (this.history.length > 0) {
-          const lastPosition = this.history[this.history.length - 1];
+      if (newX >= -containerWidth.value / 2 && newX <= containerWidth.value / 2 && newY >= -containerHeight.value / 2 && newY <= containerHeight.value / 2) {
+        if (history.value.length > 0) {
+          const lastPosition = history.value[history.value.length - 1];
           if (lastPosition.x === newX && lastPosition.y === newY) {
             // Remover a última linha se a nova posição for a mesma que a anterior
-            this.lines.pop();
-            this.history.pop();
+            lines.value.pop();
+            history.value.pop();
           } else {
             // Adicionar nova linha e posição ao histórico
-            this.lines.push({
-              x1: previousX + this.containerWidth / 2,
-              y1: previousY + this.containerHeight / 2,
-              x2: newX + this.containerWidth / 2,
-              y2: newY + this.containerHeight / 2,
+            lines.value.push({
+              x1: previousX + containerWidth.value / 2,
+              y1: previousY + containerHeight.value / 2,
+              x2: newX + containerWidth.value / 2,
+              y2: newY + containerHeight.value / 2,
             });
-            this.history.push({ x: previousX, y: previousY });
+            history.value.push({ x: previousX, y: previousY });
           }
         } else {
           // Adicionar nova linha e posição ao histórico
-          this.lines.push({
-            x1: previousX + this.containerWidth / 2,
-            y1: previousY + this.containerHeight / 2,
-            x2: newX + this.containerWidth / 2,
-            y2: newY + this.containerHeight / 2,
+          lines.value.push({
+            x1: previousX + containerWidth.value / 2,
+            y1: previousY + containerHeight.value / 2,
+            x2: newX + containerWidth.value / 2,
+            y2: newY + containerHeight.value / 2,
           });
-          this.history.push({ x: previousX, y: previousY });
+          history.value.push({ x: previousX, y: previousY });
         }
-  
+
         // Atualizar a posição
-        this.x = newX;
-        this.y = newY;
+        x.value = newX;
+        y.value = newY;
       }
-    },
-    getOrientation() {
-      switch (this.angle) {
+    };
+
+    const getOrientation = () => {
+      switch (angle.value) {
         case 0:
           return 'Para Cima';
         case 180:
@@ -130,7 +152,26 @@ export default {
         default:
           return 'Parado';
       }
-    }
+    };
+
+    return {
+      x,
+      y,
+      angle,
+      lines,
+      containerWidth,
+      containerHeight,
+      updatePosition,
+      getOrientation,
+      updateContainerSize,
+    };
+  },
+  computed: {
+    arrowStyle() {
+      return {
+        transform: `translate(${this.x}px, ${this.y}px) rotate(${this.angle}deg)`,
+      };
+    },
   },
 };
 </script>

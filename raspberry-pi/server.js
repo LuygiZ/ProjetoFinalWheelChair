@@ -21,9 +21,7 @@ app.post('/direcao', (req, res) => {
     console.log('Direção recebida:', directionData);
 
     if (directionData.source === 'voice') {
-        io.emit('direcao_voice', directionData);
-    } else {
-        io.emit('direcao_client', directionData);
+        io.emit('direcao_voice', directionData.direcao);
     }
 
     res.send('Dados recebidos com sucesso');
