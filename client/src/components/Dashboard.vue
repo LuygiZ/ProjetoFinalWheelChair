@@ -17,12 +17,6 @@
         <div class="key" :class="{ active: activeKey === 'ArrowRight' }" @mousedown="handleKeyDown({ key: 'ArrowRight' })" @mouseup="handleKeyUp">→</div>
       </div>
     </div>
-
-    <div id="speed-controls">
-      <button @click="decreaseSpeed">-</button>
-      <span>Speed: x{{ speed }}</span>
-      <button @click="increaseSpeed">+</button>
-    </div>
   </div>
 </template>
 
@@ -72,14 +66,6 @@ const handleKeyDown = (event) => {
 const handleKeyUp = () => {
   handleCommand('stop');
   activeKey.value = null;
-};
-
-const increaseSpeed = () => {
-  speed.value = Math.min(speed.value + 0.5, 5); // Aumentar a velocidade em 0.5, limite máximo 5
-};
-
-const decreaseSpeed = () => {
-  speed.value = Math.max(speed.value - 0.5, 0.5); // Diminuir a velocidade em 0.5, limite mínimo 0.5
 };
 </script>
 
@@ -132,31 +118,5 @@ const decreaseSpeed = () => {
 #arrow-controls .key.active {
   background-color: gray;
   color: white;
-}
-
-#speed-controls {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: white;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-#speed-controls button {
-  width: 30px;
-  height: 30px;
-  font-size: 18px;
-  cursor: pointer;
-  margin: 0 5px;
-}
-
-#speed-controls span {
-  margin: 0 10px;
-  font-size: 18px;
 }
 </style>

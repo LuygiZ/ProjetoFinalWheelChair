@@ -6,11 +6,16 @@
             stroke="blue" stroke-width="4"/>
     </svg>
     <div class="arrow" :style="arrowStyle"></div>
+    <div id="speed-controls">
+      <button @click="decreaseSpeed">-</button>
+      <span>Speed: x{{ speed }}</span>
+      <button @click="increaseSpeed">+</button>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import { io } from 'socket.io-client';
 
 export default {
@@ -21,7 +26,7 @@ export default {
       default: 1
     }
   },
-  setup(props) {
+  setup(props, { emit }) {
     const x = ref(0);
     const y = ref(0);
     const angle = ref(0);
@@ -29,8 +34,9 @@ export default {
     const history = ref([]); // Histórico das posições
     const containerWidth = ref(0);
     const containerHeight = ref(0);
+    const speed = ref(props.speed);
 
-    const socket = io('http://localhost:3000');
+    const socket = io('http://localhost:3000');  // Substitua pelo IP do seu Raspberry Pi
 
     onMounted(() => {
       updateContainerSize();
@@ -46,6 +52,10 @@ export default {
     onBeforeUnmount(() => {
       window.removeEventListener('resize', updateContainerSize);
       socket.off('direcao_voice');
+    });
+
+    watch(() => props.speed, (newSpeed) => {
+      speed.value = newSpeed;
     });
 
     const updateContainerSize = () => {
@@ -71,13 +81,19 @@ export default {
         case 'parar':
           updatePosition('stop');
           break;
+        case 'mais':
+          increaseSpeed();
+          break;
+        case 'menos':
+          decreaseSpeed();
+          break;
         default:
           console.log(`Comando desconhecido: ${command}`);
       }
     };
 
     const updatePosition = (command) => {
-      const step = 20 * props.speed; // Multiplicar o passo pela velocidade atual
+      const step = 20 * speed.value; // Multiplicar o passo pela velocidade atual
       const previousX = x.value;
       const previousY = y.value;
       let newX = x.value;
@@ -154,6 +170,20 @@ export default {
       }
     };
 
+    const increaseSpeed = () => {
+      const newSpeed = Math.min(speed.value + 0.5, 5); // Aumentar a velocidade em 0.5, limite máximo 5
+      socket.emit('speed_change', newSpeed);  // Emitir evento de mudança de velocidade
+      speed.value = newSpeed;
+      emit('speedChange', newSpeed);
+    };
+
+    const decreaseSpeed = () => {
+      const newSpeed = Math.max(speed.value - 0.5, 0.5); // Diminuir a velocidade em 0.5, limite mínimo 0.5
+      socket.emit('speed_change', newSpeed);  // Emitir evento de mudança de velocidade
+      speed.value = newSpeed;
+      emit('speedChange', newSpeed);
+    };
+
     return {
       x,
       y,
@@ -161,9 +191,12 @@ export default {
       lines,
       containerWidth,
       containerHeight,
+      speed,
       updatePosition,
       getOrientation,
       updateContainerSize,
+      increaseSpeed,
+      decreaseSpeed,
     };
   },
   computed: {
@@ -203,5 +236,31 @@ export default {
   position: absolute;
   top: 0;
   left: 0;
+}
+
+#speed-controls {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  background-color: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+#speed-controls button {
+  width: 30px;
+  height: 30px;
+  font-size: 18px;
+  cursor: pointer;
+  margin: 0 5px;
+}
+
+#speed-controls span {
+  margin: 0 10px;
+  font-size: 18px;
 }
 </style>
