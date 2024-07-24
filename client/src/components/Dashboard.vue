@@ -26,10 +26,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 import axios from 'axios';
+import io from 'socket.io-client';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
+
+const socket = io('http://localhost:3000'); // Certifique-se de ajustar para o endereço correto do servidor
 
 const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);
@@ -96,6 +99,19 @@ const toggleVoiceRecognition = () => {
       });
   }
 };
+
+const handleVoiceRecognitionReady = (message) => {
+  alert(message);
+  socket.off('voice-recognition-ready', handleVoiceRecognitionReady); // Desregistrar o evento
+};
+
+onMounted(() => {
+  socket.on('voice-recognition-ready', handleVoiceRecognitionReady);
+});
+
+onUnmounted(() => {
+  socket.off('voice-recognition-ready', handleVoiceRecognitionReady);
+});
 </script>
 
 <style>

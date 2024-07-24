@@ -39,21 +39,36 @@ app.post('/start-voice-recognition', (req, res) => {
   let command;
   if (process.platform === 'win32') {
     // Comando para Windows
-    command = `cmd /k "venv\\Scripts\\activate && python ${scriptPath}"`;
+    command = `cmd /c "venv\\Scripts\\activate && python ${scriptPath}"`;
   } else {
     // Comando para Unix (Linux, macOS)
     const venvActivatePath = 'venv/bin/activate';
     command = `source ${venvActivatePath} && python ${scriptPath}`;
   }
 
-  voiceRecognitionProcess = spawn(command, { shell: true, stdio: 'inherit' });
+  voiceRecognitionProcess = spawn(command, { shell: true });
 
-  voiceRecognitionProcess.on('close', (code) => {
-    console.log(`Voice recognition process exited with code ${code}`);
-    voiceRecognitionProcess = null;
-  });
+  if (voiceRecognitionProcess) {
+    voiceRecognitionProcess.stdout.on('data', (data) => {
+      console.log(`stdout: ${data}`);
+      if (data.toString().includes("Esperando detecção de som...")) {
+        io.emit('voice-recognition-ready', 'O reconhecimento de voz está pronto para ouvir.');
+      }
+    });
 
-  res.send('Reconhecimento de voz iniciado com sucesso');
+    voiceRecognitionProcess.stderr.on('data', (data) => {
+      console.error(`stderr: ${data}`);
+    });
+
+    voiceRecognitionProcess.on('close', (code) => {
+      console.log(`Voice recognition process exited with code ${code}`);
+      voiceRecognitionProcess = null;
+    });
+
+    res.send('Reconhecimento de voz iniciado com sucesso');
+  } else {
+    res.status(500).send('Failed to start voice recognition process.');
+  }
 });
 
 app.post('/stop-voice-recognition', (req, res) => {
