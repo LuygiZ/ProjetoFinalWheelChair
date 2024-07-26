@@ -13,10 +13,7 @@ export default {
   data() {
     return {
       joystick: null,
-      activeKey: null,
-      moveTimeout: null,
-      moveInterval: null,
-      moveStep: 5, // Step size for smoother control
+      activeKey: null
     };
   },
   mounted() {
@@ -27,65 +24,59 @@ export default {
   beforeUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
-    if (this.moveInterval) {
-      clearInterval(this.moveInterval);
-    }
   },
   methods: {
     initializeJoystick() {
-      const joystickContainer = document.getElementById('joystick-container');
-      const options = {
-        zone: joystickContainer,
-        mode: 'static',
-        position: { left: '50%', top: '50%' },
-        color: 'black',
-      };
+  const joystickContainer = document.getElementById('joystick-container');
+  const options = {
+    zone: joystickContainer,
+    mode: 'static',
+    position: { left: '50%', top: '50%' },
+    color: 'black',
+  };
 
-      this.joystick = nipplejs.create(options);
+  this.joystick = nipplejs.create(options);
 
-      this.joystick.on('move', (evt, data) => {
-        const distance = Math.min(data.distance, 50); // Limitar a distância do movimento
-        const angle = data.angle.radian;
-        const x = Math.cos(angle) * distance;
-        const y = -Math.sin(angle) * distance; // Inverter o valor de y
+  this.joystick.on('move', (evt, data) => {
+    const distance = Math.min(data.distance, 50); // Limitar a distância do movimento
+    const angle = data.angle.radian;
+    const x = Math.cos(angle) * distance;
+    const y = -Math.sin(angle) * distance; // Inverter o valor de y
 
-        // Aplicar transform diretamente no joystick usando nipplejs
-        const nippleElement = this.joystick[0].ui.front;
-        nippleElement.style.transform = `translate(${x}px, ${y}px)`;
+    // Aplicar transform diretamente no joystick usando nipplejs
+    const nippleElement = this.joystick[0].ui.front;
+    nippleElement.style.transform = `translate(${x}px, ${y}px)`;
 
-        const direction = data.direction;
-        if (direction) {
-          let command = null;
-          switch (direction.angle) {
-            case 'up':
-              command = 'forward';
-              break;
-            case 'down':
-              command = 'backward';
-              break;
-            case 'left':
-              command = 'left';
-              break;
-            case 'right':
-              command = 'right';
-              break;
-          }
-          if (command) {
-            this.sendDirectionToServer({ command });
-            this.$emit('command', command); // Emitir evento com o comando
-          }
-        }
-      });
+    const direction = data.direction;
+    if (direction) {
+      let command = null;
+      switch (direction.angle) {
+        case 'up':
+          command = 'forward';
+          break;
+        case 'down':
+          command = 'backward';
+          break;
+        case 'left':
+          command = 'left';
+          break;
+        case 'right':
+          command = 'right';
+          break;
+      }
+      if (command) {
+        this.sendDirectionToServer({ command });
+        this.$emit('command', command); // Emitir evento com o comando
+      }
+    }
+  });
 
-      this.joystick.on('end', () => {
-        this.sendDirectionToServer({ command: 'stop' });
-        this.$emit('command', 'stop'); // Emitir evento de parada
-        this.resetJoystickVisual();
-        if (this.moveInterval) {
-          clearInterval(this.moveInterval);
-        }
-      });
-    },
+  this.joystick.on('end', () => {
+    this.sendDirectionToServer({ command: 'stop' });
+    this.$emit('command', 'stop'); // Emitir evento de parada
+    this.resetJoystickVisual();
+  });
+},
     sendDirectionToServer(data) {
       console.log('Sending data:', data); // Log de depuração
       axios.post('http://localhost:3000/direcao', data)
@@ -140,12 +131,7 @@ export default {
           break;
       }
       if (command) {
-        if (this.moveInterval) {
-          clearInterval(this.moveInterval);
-        }
-        this.moveInterval = setInterval(() => {
-          this.sendDirectionToServer({ command });
-        }, 100); // Envia comando a cada 100ms para suavizar o movimento
+        this.sendDirectionToServer({ command });
         this.$emit('command', command); // Emitir evento com o comando
       }
     },
@@ -153,9 +139,6 @@ export default {
       this.sendDirectionToServer({ command: 'stop' });
       this.$emit('command', 'stop'); // Emitir evento "parar"
       this.resetJoystickVisual();
-      if (this.moveInterval) {
-        clearInterval(this.moveInterval);
-      }
       this.activeKey = null;
     },
   },
