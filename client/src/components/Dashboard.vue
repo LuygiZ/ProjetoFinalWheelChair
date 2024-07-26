@@ -18,7 +18,6 @@
       </div>
     </div>
 
-    <!-- Ícone de microfone -->
     <div id="microphone-icon" @click="toggleVoiceRecognition">
       🎤
     </div>
@@ -56,10 +55,10 @@ const handleKeyDown = (event) => {
   activeKey.value = event.key;
   switch (event.key) {
     case 'ArrowUp':
-      command = 'up';
+      command = 'forward';
       break;
     case 'ArrowDown':
-      command = 'down';
+      command = 'backward';
       break;
     case 'ArrowLeft':
       command = 'left';

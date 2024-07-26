@@ -67,33 +67,13 @@ export default {
       containerHeight.value = container.clientHeight;
     };
 
-    const handleVoiceCommand = (command) => {
-      switch (command) {
-        case 'direita':
-          startMoving('right');
-          break;
-        case 'esquerda':
-          startMoving('left');
-          break;
-        case 'frente':
-          startMoving('up');
-          break;
-        case 'tras':
-          startReversing();
-          break;
-        case 'parar':
-          stopMoving();
-          stopReversing();
-          break;
-        case 'mais':
-          increaseSpeed();
-          break;
-        case 'menos':
-          decreaseSpeed();
-          break;
-        default:
-          console.log(`Comando desconhecido: ${command}`);
-      }
+    const getOrientation = () => {
+      const normalizedAngle = (angle.value % 360 + 360) % 360; // Normalize angle to be between 0 and 360
+      if (normalizedAngle === 0) return 'Para Cima'; // Norte
+      if (normalizedAngle === 90) return 'Para Direita'; // Leste
+      if (normalizedAngle === 180) return 'Para Baixo'; // Sul
+      if (normalizedAngle === 270) return 'Para Esquerda'; // Oeste
+      return 'Parado';
     };
 
     const updatePosition = (direction) => {
@@ -107,22 +87,47 @@ export default {
         stopReversing();
       }
 
+      const orientation = getOrientation();
+
+      // Calcular os deslocamentos com base na orientação atual da seta
       switch (direction) {
-        case 'up':
-          newY -= step;
-          angle.value = 0;
+        case 'forward':
+          switch (orientation) {
+            case 'Para Cima':
+              newY -= step;
+              break;
+            case 'Para Direita':
+              newX += step;
+              break;
+            case 'Para Baixo':
+              newY += step;
+              break;
+            case 'Para Esquerda':
+              newX -= step;
+              break;
+          }
           break;
-        case 'down':
-          newY += step;
-          angle.value = 180;
+        case 'backward':
+          switch (orientation) {
+            case 'Para Cima':
+              newY += step;
+              break;
+            case 'Para Direita':
+              newX -= step;
+              break;
+            case 'Para Baixo':
+              newY -= step;
+              break;
+            case 'Para Esquerda':
+              newX += step;
+              break;
+          }
           break;
         case 'left':
-          newX -= step;
-          angle.value = -90;
+          angle.value -= 90;
           break;
         case 'right':
-          newX += step;
-          angle.value = 90;
+          angle.value += 90;
           break;
         case 'stop':
           return; // Não faz nada ao parar
@@ -139,6 +144,34 @@ export default {
 
         x.value = newX;
         y.value = newY;
+      }
+    };
+
+    const handleVoiceCommand = (command) => {
+      switch (command) {
+        case 'direita':
+          updatePosition('right');
+          break;
+        case 'esquerda':
+          updatePosition('left');
+          break;
+        case 'frente':
+          startMoving('forward');
+          break;
+        case 'tras':
+          startMoving('backward');
+          break;
+        case 'parar':
+          stopMoving();
+          break;
+        case 'mais':
+          increaseSpeed();
+          break;
+        case 'menos':
+          decreaseSpeed();
+          break;
+        default:
+          console.log(`Comando desconhecido: ${command}`);
       }
     };
 
@@ -189,21 +222,6 @@ export default {
       if (movementInterval.value) {
         clearInterval(movementInterval.value);
         movementInterval.value = null;
-      }
-    };
-
-    const getOrientation = () => {
-      switch (angle.value) {
-        case 0:
-          return 'Para Cima';
-        case 180:
-          return 'Para Baixo';
-        case -90:
-          return 'Para Esquerda';
-        case 90:
-          return 'Para Direita';
-        default:
-          return 'Parado';
       }
     };
 

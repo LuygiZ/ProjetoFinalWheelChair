@@ -14,7 +14,9 @@ export default {
     return {
       joystick: null,
       activeKey: null,
-      speed: 1, // Velocidade inicial
+      moveTimeout: null,
+      moveInterval: null,
+      moveStep: 5, // Step size for smoother control
     };
   },
   mounted() {
@@ -25,6 +27,9 @@ export default {
   beforeUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
     window.removeEventListener('keyup', this.handleKeyUp);
+    if (this.moveInterval) {
+      clearInterval(this.moveInterval);
+    }
   },
   methods: {
     initializeJoystick() {
@@ -53,10 +58,10 @@ export default {
           let command = null;
           switch (direction.angle) {
             case 'up':
-              command = 'up';
+              command = 'forward';
               break;
             case 'down':
-              command = 'down';
+              command = 'backward';
               break;
             case 'left':
               command = 'left';
@@ -76,6 +81,9 @@ export default {
         this.sendDirectionToServer({ command: 'stop' });
         this.$emit('command', 'stop'); // Emitir evento de parada
         this.resetJoystickVisual();
+        if (this.moveInterval) {
+          clearInterval(this.moveInterval);
+        }
       });
     },
     sendDirectionToServer(data) {
@@ -96,10 +104,10 @@ export default {
     moveJoystickVisual(direction) {
       const nippleElement = this.joystick[0].ui.front;
       switch (direction) {
-        case 'up':
+        case 'forward':
           nippleElement.style.transform = 'translateY(-50px)';
           break;
-        case 'down':
+        case 'backward':
           nippleElement.style.transform = 'translateY(50px)';
           break;
         case 'left':
@@ -115,12 +123,12 @@ export default {
       this.activeKey = event.key;
       switch (event.key) {
         case 'ArrowUp':
-          command = 'up';
-          this.moveJoystickVisual('up');
+          command = 'forward';
+          this.moveJoystickVisual('forward');
           break;
         case 'ArrowDown':
-          command = 'down';
-          this.moveJoystickVisual('down');
+          command = 'backward';
+          this.moveJoystickVisual('backward');
           break;
         case 'ArrowLeft':
           command = 'left';
@@ -132,23 +140,23 @@ export default {
           break;
       }
       if (command) {
-        this.sendDirectionToServer({ command });
+        if (this.moveInterval) {
+          clearInterval(this.moveInterval);
+        }
+        this.moveInterval = setInterval(() => {
+          this.sendDirectionToServer({ command });
+        }, 100); // Envia comando a cada 100ms para suavizar o movimento
         this.$emit('command', command); // Emitir evento com o comando
       }
     },
     handleKeyUp() {
       this.sendDirectionToServer({ command: 'stop' });
-      this.$emit('command', 'stop'); // Emitir evento de parada
+      this.$emit('command', 'stop'); // Emitir evento "parar"
       this.resetJoystickVisual();
+      if (this.moveInterval) {
+        clearInterval(this.moveInterval);
+      }
       this.activeKey = null;
-    },
-    increaseSpeed() {
-      this.speed = Math.min(this.speed + 0.5, 5); // Aumentar a velocidade em 0.5, limite máximo 5
-      this.$emit('speedChange', this.speed); // Emitir evento de mudança de velocidade
-    },
-    decreaseSpeed() {
-      this.speed = Math.max(this.speed - 0.5, 0.5); // Diminuir a velocidade em 0.5, limite mínimo 0.5
-      this.$emit('speedChange', this.speed); // Emitir evento de mudança de velocidade
     },
   },
 };
@@ -199,23 +207,5 @@ export default {
 .key.active {
   background-color: gray;
   color: white;
-}
-
-#speed-controls {
-  display: flex;
-  align-items: center;
-  margin-top: 10px;
-}
-
-#speed-controls button {
-  width: 30px;
-  height: 30px;
-  font-size: 18px;
-  cursor: pointer; /* Adiciona um cursor de ponteiro para indicar que é clicável */
-}
-
-#speed-controls span {
-  margin: 0 10px;
-  font-size: 18px;
 }
 </style>

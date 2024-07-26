@@ -20,7 +20,7 @@
       <div class="feature">
         <h2>Real-time Monitoring</h2>
         <p>
-          Monitor your health and wheelchair status in real-time, ensuring you always stay informed.
+          Monitor your wheelchair status in real-time, ensuring you always stay informed.
         </p>
       </div>
     </div>
