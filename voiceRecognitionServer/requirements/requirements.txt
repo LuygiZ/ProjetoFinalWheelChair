@@ -3,3 +3,5 @@ flask-cors
 tensorflow
 librosa
 pyaudio
+axios
+cors
