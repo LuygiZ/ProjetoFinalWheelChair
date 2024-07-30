@@ -2,3 +2,4 @@ pip install pyaudio
 pip install numpy
 pip install librosa
 pip install tensorflow
+pip install flask
