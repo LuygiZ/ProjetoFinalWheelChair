@@ -31,6 +31,7 @@ import io from 'socket.io-client';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
 
+//const socket = io('http://raspberry-pi-ip:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
 const socket = io('http://localhost:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
 
 const speed = ref(1); // Velocidade inicial
@@ -38,7 +39,6 @@ const arrowSimulator = ref(null);
 const activeKey = ref(null); // Estado para a tecla ativa
 const currentOrientation = ref('Parado'); // Nova variável para armazenar a orientação atual
 const isVoiceRecognitionActive = ref(false); // Estado para controle do reconhecimento de voz
-const isListening = ref(false); // Estado para controle do estado de escuta
 
 const updateSpeed = (newSpeed) => {
   speed.value = newSpeed;
@@ -84,19 +84,18 @@ const toggleVoiceRecognition = () => {
       .then(response => {
         console.log('Voice recognition started:', response.data);
         isVoiceRecognitionActive.value = true;
-        isListening.value = true;
       })
       .catch(error => {
         console.error('Error starting voice recognition:', error);
       });
   } else {
-    axios.post('http://localhost:4000/pause-listening')
+    axios.post('http://localhost:4000/stop-voice-recognition')
       .then(response => {
-        console.log('Listening state toggled:', response.data);
-        isListening.value = !isListening.value;
+        console.log('Voice recognition stopped:', response.data);
+        isVoiceRecognitionActive.value = false;
       })
       .catch(error => {
-        console.error('Error toggling listening state:', error);
+        console.error('Error stopping voice recognition:', error);
       });
   }
 };

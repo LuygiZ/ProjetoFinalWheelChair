@@ -1,6 +1,5 @@
 const express = require('express');
 const { spawn } = require('child_process');
-const axios = require('axios');
 const cors = require('cors'); // Adicione isso
 
 const app = express();
@@ -46,21 +45,6 @@ app.post('/stop-voice-recognition', (req, res) => {
   voiceRecognitionProcess.kill('SIGINT');
   voiceRecognitionProcess = null;
   res.send('Voice recognition stopped.');
-});
-
-app.post('/pause-listening', (req, res) => {
-  if (!voiceRecognitionProcess) {
-    return res.status(400).send('Voice recognition is not running.');
-  }
-
-  axios.post('http://localhost:5000/pause-listening')
-    .then(response => {
-      res.send(response.data);
-    })
-    .catch(error => {
-      console.error('Error toggling listening state:', error);
-      res.status(500).send('Failed to toggle listening state.');
-    });
 });
 
 app.listen(port, () => {

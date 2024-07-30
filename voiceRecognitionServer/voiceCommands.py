@@ -7,7 +7,7 @@ import librosa
 import tensorflow as tf
 from keras.models import load_model
 import requests
-from flask import Flask, request
+from flask import Flask
 
 # Definir a codificação padrão para UTF-8
 sys.stdout.reconfigure(encoding='utf-8')
@@ -17,7 +17,6 @@ app = Flask(__name__)
 
 # Variável global para controlar a execução do script
 running = True
-listening = True  # Flag para controlar se o script está ouvindo ou não
 
 def signal_handler(sig, frame):
     global running
@@ -66,7 +65,8 @@ def predict_action(audio, sr):
 
 # Função para enviar o comando ao servidor
 def send_command_to_server(action):
-    url = 'http://localhost:3000/direcao'  # Substitua <Raspberry_Pi_IP> pelo IP do seu Raspberry Pi
+    #url = 'http://<Raspberry_Pi_IP>:3000/direcao'  # Substitua <Raspberry_Pi_IP> pelo IP do seu Raspberry Pi
+    url = 'http://localhost:3000/direcao'
     data = {'direcao': action, 'source': 'voice'}
     try:
         response = requests.post(url, json=data)
@@ -96,23 +96,10 @@ frames = []
 silent_chunks = 0
 recording = False
 
-@app.route('/pause-listening', methods=['POST'])
-def pause_listening():
-    global listening
-    listening = not listening
-    state = "listening" if listening else "paused"
-    print(f"Voice recognition is now {state}.")
-    return f'Listening state toggled. Voice recognition is now {state}.'
-
 def main_loop():
-    global frames, silent_chunks, recording, listening
+    global frames, silent_chunks, recording
     try:
         while running:
-            if not listening:
-                print("Paused...")  # Adicione isso para depuração
-                time.sleep(1)  # Aguarde um segundo antes de verificar novamente
-                continue
-
             data = stream.read(chunk)
             if not is_silence(data, threshold):
                 if not recording:
