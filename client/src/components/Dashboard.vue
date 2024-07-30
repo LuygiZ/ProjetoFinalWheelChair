@@ -31,13 +31,14 @@ import io from 'socket.io-client';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
 
-const socket = io('http://localhost:3000'); // Certifique-se de ajustar para o endereço correto do servidor
+const socket = io('http://localhost:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
 
 const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);
 const activeKey = ref(null); // Estado para a tecla ativa
 const currentOrientation = ref('Parado'); // Nova variável para armazenar a orientação atual
 const isVoiceRecognitionActive = ref(false); // Estado para controle do reconhecimento de voz
+const isListening = ref(false); // Estado para controle do estado de escuta
 
 const updateSpeed = (newSpeed) => {
   speed.value = newSpeed;
@@ -78,18 +79,26 @@ const handleKeyUp = () => {
 };
 
 const toggleVoiceRecognition = () => {
-  const url = isVoiceRecognitionActive.value 
-    ? 'http://localhost:3000/stop-voice-recognition' 
-    : 'http://localhost:3000/start-voice-recognition';
-
-  axios.post(url)
-    .then(response => {
-      console.log(`${isVoiceRecognitionActive.value ? 'Voice recognition stopped' : 'Voice recognition started'}:`, response.data);
-      isVoiceRecognitionActive.value = !isVoiceRecognitionActive.value;
-    })
-    .catch(error => {
-      console.error(`Error ${isVoiceRecognitionActive.value ? 'stopping' : 'starting'} voice recognition:`, error);
-    });
+  if (!isVoiceRecognitionActive.value) {
+    axios.post('http://localhost:4000/start-voice-recognition')
+      .then(response => {
+        console.log('Voice recognition started:', response.data);
+        isVoiceRecognitionActive.value = true;
+        isListening.value = true;
+      })
+      .catch(error => {
+        console.error('Error starting voice recognition:', error);
+      });
+  } else {
+    axios.post('http://localhost:4000/pause-listening')
+      .then(response => {
+        console.log('Listening state toggled:', response.data);
+        isListening.value = !isListening.value;
+      })
+      .catch(error => {
+        console.error('Error toggling listening state:', error);
+      });
+  }
 };
 
 const handleVoiceRecognitionReady = (message) => {
@@ -123,7 +132,7 @@ onUnmounted(() => {
 #arrow-controls {
   display: flex;
   flex-direction: column;
-  align-items: center;
+ 	align-items: center;
   position: fixed;
   bottom: 80px;
   right: 20px;
@@ -145,7 +154,7 @@ onUnmounted(() => {
   background-color: lightgray;
   display: flex;
   justify-content: center;
-  align-items: center;
+ 	align-items: center;
   margin: 5px;
   border-radius: 10px;
   font-size: 24px;
