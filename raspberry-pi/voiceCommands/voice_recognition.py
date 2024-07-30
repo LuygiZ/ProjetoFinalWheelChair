@@ -42,13 +42,13 @@ def preprocess_audio(audio, sr, max_len=128):
     return mel_spectrogram
 
 # Carregar o modelo
-model_path = 'voiceCommands/voice_command_modelV2.h5'  # Substitua pelo caminho correto do seu modelo .h5
+model_path = 'voice_command_modelV2.h5'
 model = load_model(model_path)
 
 # Mapeamento de índices para palavras
 actions = ["frente", "tras", "esquerda", "direita", "mais", "menos", "parar", "rodar"]
 
-# Função para realizar a previsão
+# Função para fazer previsão
 def predict_action(audio, sr):
     mel_spectrogram = preprocess_audio(audio, sr)
     mel_spectrogram = np.expand_dims(mel_spectrogram, axis=0)
