@@ -1,9 +1,8 @@
 <template>
   <div id="arrow-container">
     <svg class="lines" :width="containerWidth" :height="containerHeight">
-      <line v-for="(line, index) in lines" :key="index"
-            :x1="line.x1" :y1="line.y1" :x2="line.x2" :y2="line.y2"
-            stroke="blue" stroke-width="4"/>
+      <line v-for="(line, index) in lines" :key="index" :x1="line.x1" :y1="line.y1" :x2="line.x2" :y2="line.y2"
+        stroke="blue" stroke-width="4" />
     </svg>
     <div class="arrow" :style="arrowStyle"></div>
     <div id="speed-controls">
@@ -38,7 +37,7 @@ export default {
     const isReversing = ref(false);
     const movementInterval = ref(null);
 
-    const socket = io('http://localhost:3000');  // Substitua pelo IP do seu Raspberry Pi
+    const socket = io('http://192.168.50.236:3000');  // Substitua pelo IP do seu Raspberry Pi
 
     onMounted(() => {
       updateContainerSize();
@@ -270,12 +269,16 @@ export default {
 
 <style scoped>
 #arrow-container {
-  width: calc(100% - 220px); /* Ajustar para acomodar o menu lateral */
-  height: calc(100vh - 56px); /* Ajustar para acomodar a altura da barra de navegação */
+  width: calc(100% - 220px);
+  /* Ajustar para acomodar o menu lateral */
+  height: calc(100vh - 56px);
+  /* Ajustar para acomodar a altura da barra de navegação */
   border: 1px solid black;
   position: absolute;
-  top: 56px; /* Ajustar para abaixo da barra de navegação */
-  left: 220px; /* Ajustar para a direita do menu lateral */
+  top: 56px;
+  /* Ajustar para abaixo da barra de navegação */
+  left: 220px;
+  /* Ajustar para a direita do menu lateral */
   overflow: hidden;
 }
 

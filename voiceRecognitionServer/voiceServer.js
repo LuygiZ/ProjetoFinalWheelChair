@@ -1,13 +1,13 @@
 const express = require('express');
-const { spawn } = require('child_process');
-const cors = require('cors'); // Adicione isso
+const { spawn, exec } = require('child_process'); // Add 'exec' to run shell commands
+const cors = require('cors');
 
 const app = express();
-const port = 4000; // Escolha uma porta que não esteja em uso
+const port = 4000;
 
 let voiceRecognitionProcess = null;
 
-app.use(cors()); // Adicione isso para habilitar CORS para todas as origens
+app.use(cors());
 app.use(express.json());
 
 app.post('/start-voice-recognition', (req, res) => {
@@ -20,9 +20,6 @@ app.post('/start-voice-recognition', (req, res) => {
 
   voiceRecognitionProcess.stdout.on('data', (data) => {
     console.log(`stdout: ${data}`);
-    if (data.toString().includes("Esperando detecção de som...")) {
-      // Enviar uma notificação para o cliente via WebSocket ou outro método
-    }
   });
 
   voiceRecognitionProcess.stderr.on('data', (data) => {
@@ -42,9 +39,23 @@ app.post('/stop-voice-recognition', (req, res) => {
     return res.status(400).send('Voice recognition is not running.');
   }
 
+  // Kill the Python process
   voiceRecognitionProcess.kill('SIGINT');
   voiceRecognitionProcess = null;
-  res.send('Voice recognition stopped.');
+
+  // Automatically kill the process using port 5000
+  const killCommand = process.platform === 'win32'
+    ? `for /f "tokens=5" %a in ('netstat -ano ^| findstr :5000') do taskkill /F /PID %a`
+    : `lsof -t -i :5000 | xargs kill -9`;
+
+  exec(killCommand, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error killing process on port 5000: ${error}`);
+      return res.status(500).send('Error stopping voice recognition.');
+    }
+    console.log(`Process on port 5000 killed successfully.`);
+    res.send('Voice recognition stopped and port 5000 cleared.');
+  });
 });
 
 app.listen(port, () => {

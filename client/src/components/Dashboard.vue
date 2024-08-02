@@ -9,17 +9,22 @@
 
     <div id="arrow-controls">
       <div class="row">
-        <div class="key" :class="{ active: activeKey === 'ArrowUp' }" @mousedown="handleKeyDown({ key: 'ArrowUp' })" @mouseup="handleKeyUp">↑</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowUp' }" @mousedown="handleKeyDown({ key: 'ArrowUp' })"
+          @mouseup="handleKeyUp">↑</div>
       </div>
       <div class="row">
-        <div class="key" :class="{ active: activeKey === 'ArrowLeft' }" @mousedown="handleKeyDown({ key: 'ArrowLeft' })" @mouseup="handleKeyUp">←</div>
-        <div class="key" :class="{ active: activeKey === 'ArrowDown' }" @mousedown="handleKeyDown({ key: 'ArrowDown' })" @mouseup="handleKeyUp">↓</div>
-        <div class="key" :class="{ active: activeKey === 'ArrowRight' }" @mousedown="handleKeyDown({ key: 'ArrowRight' })" @mouseup="handleKeyUp">→</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowLeft' }" @mousedown="handleKeyDown({ key: 'ArrowLeft' })"
+          @mouseup="handleKeyUp">←</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowDown' }" @mousedown="handleKeyDown({ key: 'ArrowDown' })"
+          @mouseup="handleKeyUp">↓</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowRight' }" @mousedown="handleKeyDown({ key: 'ArrowRight' })"
+          @mouseup="handleKeyUp">→</div>
       </div>
     </div>
 
     <div id="microphone-icon" @click="toggleVoiceRecognition">
-      🎤
+      <span v-if="isVoiceRecognitionActive">🛑</span> <!-- Stop Icon -->
+      <span v-else>🎤</span> <!-- Microphone Icon -->
     </div>
   </div>
 </template>
@@ -31,8 +36,7 @@ import io from 'socket.io-client';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
 
-//const socket = io('http://raspberry-pi-ip:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
-const socket = io('http://localhost:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
+const socket = io('http://192.168.50.236:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
 
 const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);
@@ -131,7 +135,7 @@ onUnmounted(() => {
 #arrow-controls {
   display: flex;
   flex-direction: column;
- 	align-items: center;
+  align-items: center;
   position: fixed;
   bottom: 80px;
   right: 20px;
@@ -153,7 +157,7 @@ onUnmounted(() => {
   background-color: lightgray;
   display: flex;
   justify-content: center;
- 	align-items: center;
+  align-items: center;
   margin: 5px;
   border-radius: 10px;
   font-size: 24px;

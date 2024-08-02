@@ -27,59 +27,59 @@ export default {
   },
   methods: {
     initializeJoystick() {
-  const joystickContainer = document.getElementById('joystick-container');
-  const options = {
-    zone: joystickContainer,
-    mode: 'static',
-    position: { left: '50%', top: '50%' },
-    color: 'black',
-  };
+      const joystickContainer = document.getElementById('joystick-container');
+      const options = {
+        zone: joystickContainer,
+        mode: 'static',
+        position: { left: '50%', top: '50%' },
+        color: 'black',
+      };
 
-  this.joystick = nipplejs.create(options);
+      this.joystick = nipplejs.create(options);
 
-  this.joystick.on('move', (evt, data) => {
-    const distance = Math.min(data.distance, 50); // Limitar a distância do movimento
-    const angle = data.angle.radian;
-    const x = Math.cos(angle) * distance;
-    const y = -Math.sin(angle) * distance; // Inverter o valor de y
+      this.joystick.on('move', (evt, data) => {
+        const distance = Math.min(data.distance, 50); // Limitar a distância do movimento
+        const angle = data.angle.radian;
+        const x = Math.cos(angle) * distance;
+        const y = -Math.sin(angle) * distance; // Inverter o valor de y
 
-    // Aplicar transform diretamente no joystick usando nipplejs
-    const nippleElement = this.joystick[0].ui.front;
-    nippleElement.style.transform = `translate(${x}px, ${y}px)`;
+        // Aplicar transform diretamente no joystick usando nipplejs
+        const nippleElement = this.joystick[0].ui.front;
+        nippleElement.style.transform = `translate(${x}px, ${y}px)`;
 
-    const direction = data.direction;
-    if (direction) {
-      let command = null;
-      switch (direction.angle) {
-        case 'up':
-          command = 'forward';
-          break;
-        case 'down':
-          command = 'backward';
-          break;
-        case 'left':
-          command = 'left';
-          break;
-        case 'right':
-          command = 'right';
-          break;
-      }
-      if (command) {
-        this.sendDirectionToServer({ command });
-        this.$emit('command', command); // Emitir evento com o comando
-      }
-    }
-  });
+        const direction = data.direction;
+        if (direction) {
+          let command = null;
+          switch (direction.angle) {
+            case 'up':
+              command = 'forward';
+              break;
+            case 'down':
+              command = 'backward';
+              break;
+            case 'left':
+              command = 'left';
+              break;
+            case 'right':
+              command = 'right';
+              break;
+          }
+          if (command) {
+            this.sendDirectionToServer({ command });
+            this.$emit('command', command); // Emitir evento com o comando
+          }
+        }
+      });
 
-  this.joystick.on('end', () => {
-    this.sendDirectionToServer({ command: 'stop' });
-    this.$emit('command', 'stop'); // Emitir evento de parada
-    this.resetJoystickVisual();
-  });
-},
+      this.joystick.on('end', () => {
+        this.sendDirectionToServer({ command: 'stop' });
+        this.$emit('command', 'stop'); // Emitir evento de parada
+        this.resetJoystickVisual();
+      });
+    },
     sendDirectionToServer(data) {
       console.log('Sending data:', data); // Log de depuração
-      axios.post('http://localhost:3000/direcao', data)
+      axios.post('http://192.168.50.236:3000/direcao', data)
         .then(response => {
           console.log('Response from server:', response.data);
         })
@@ -184,7 +184,8 @@ export default {
   margin: 5px;
   border-radius: 10px;
   font-size: 24px;
-  cursor: pointer; /* Adiciona um cursor de ponteiro para indicar que é clicável */
+  cursor: pointer;
+  /* Adiciona um cursor de ponteiro para indicar que é clicável */
 }
 
 .key.active {
