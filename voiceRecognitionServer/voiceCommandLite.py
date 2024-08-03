@@ -42,7 +42,7 @@ def preprocess_audio(audio, sr, max_len=128):
     return mel_spectrogram
 
 # Carregar o modelo TensorFlow Lite
-model_path = 'voice_command_modelV2.tflite'
+model_path = 'models/voice_command_modelV2.tflite'
 interpreter = Interpreter(model_path)
 interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
