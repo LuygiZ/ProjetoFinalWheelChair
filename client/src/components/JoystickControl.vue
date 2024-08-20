@@ -79,7 +79,8 @@ export default {
     },
     sendDirectionToServer(data) {
       console.log('Sending data:', data); // Log de depuração
-      axios.post('http://192.168.50.236:3000/direcao', data)
+      //axios.post('http://192.168.50.236:3000/direcao', data)
+      axios.post('http://localhost:3000/direcao', data)
         .then(response => {
           console.log('Response from server:', response.data);
         })

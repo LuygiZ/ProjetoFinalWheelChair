@@ -36,7 +36,8 @@ import io from 'socket.io-client';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
 
-const socket = io('http://192.168.50.236:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
+//const socket = io('http://192.168.50.236:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
+const socket = io('http://localhost:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
 
 const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);

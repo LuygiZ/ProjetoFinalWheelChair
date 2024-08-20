@@ -37,7 +37,8 @@ export default {
     const isReversing = ref(false);
     const movementInterval = ref(null);
 
-    const socket = io('http://192.168.50.236:3000');  // Substitua pelo IP do seu Raspberry Pi
+    //const socket = io('http://192.168.50.236:3000');  // Substitua pelo IP do seu Raspberry Pi
+    const socket = io('http://localhost:3000');  // Substitua pelo IP do seu Raspberry Pi
 
     onMounted(() => {
       updateContainerSize();
