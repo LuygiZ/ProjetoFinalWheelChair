@@ -47,7 +47,7 @@ def preprocess_audio(audio, sr, max_len=128):
     return mel_spectrogram
 
 # Carregar o modelo
-model_path = 'models/voice_command_modelV2.h5'
+model_path = 'models/voice_command_model_final.h5'
 model = load_model(model_path)
 
 # Mapeamento de índices para palavras
@@ -103,7 +103,7 @@ chunk = 2048  # Increased buffer size
 form = pyaudio.paInt16
 channels = 1
 rate = 44100
-threshold = 500  # Adjust as needed
+threshold = 8000  # Adjust as needed
 silence_duration = 0.5
 silence_chunks = int(silence_duration * rate / chunk)
 
