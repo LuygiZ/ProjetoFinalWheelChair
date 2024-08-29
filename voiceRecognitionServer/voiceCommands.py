@@ -76,7 +76,7 @@ def send_command_to_server(action, confidence):
         print(f"Ação prevista inválida (confiança {confidence:.2f}). Nenhum comando enviado.")
         return
     
-    url = 'http://localhost:3000/direcao'  # Updated IP address
+    url = 'http://192.168.50.236:3000/direcao'  # Updated IP address
     data = {'direcao': action, 'source': 'voice'}
     max_retries = 3
     timeout = 60  # Increased timeout to 60 seconds
