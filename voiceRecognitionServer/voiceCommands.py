@@ -50,7 +50,7 @@ def preprocess_audio(audio, sr, max_len=128):
 model_path = 'models/voice_command_model_final.h5'
 model = load_model(model_path)
 
-# Mapeamento de índices para palavras
+# Mapeamento de índices das palavras
 actions = ["frente", "tras", "esquerda", "direita", "mais", "menos", "parar", "rodar"]
 
 # Função para prever a ação
@@ -99,11 +99,11 @@ def send_command_to_server(action, confidence):
     logging.error(f"Falha ao enviar comando '{action}' após {max_retries} tentativas")
 
 # Configurações de gravação
-chunk = 2048  # Increased buffer size
+chunk = 2048  
 form = pyaudio.paInt16
 channels = 1
 rate = 44100
-threshold = 8000  # Adjust as needed
+threshold = 8000 
 silence_duration = 0.5
 silence_chunks = int(silence_duration * rate / chunk)
 

@@ -36,14 +36,14 @@ import io from 'socket.io-client';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
 
-//const socket = io('http://192.168.50.236:3000'); // Ajuste para o endereço correto do servidor Raspberry Pi
-const socket = io('http://localhost:3000/direcao'); // Ajuste para o endereço correto do servidor Raspberry Pi
+//const socket = io('http://192.168.50.236:3000'); // Ajustar para o IP correto do Raspberry Pi
+const socket = io('http://localhost:3000/direcao'); // Ajustar para o IP correto do Raspberry Pi
 
 const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);
 const activeKey = ref(null); // Estado para a tecla ativa
-const currentOrientation = ref('Parado'); // Nova variável para armazenar a orientação atual
-const isVoiceRecognitionActive = ref(false); // Estado para controle do reconhecimento de voz
+const currentOrientation = ref('Parado'); // Variável para armazenar a orientação atual
+const isVoiceRecognitionActive = ref(false); // Estado para controlo do reconhecimento de voz
 
 const updateSpeed = (newSpeed) => {
   speed.value = newSpeed;
@@ -107,7 +107,7 @@ const toggleVoiceRecognition = () => {
 
 const handleVoiceRecognitionReady = (message) => {
   alert(message);
-  socket.off('voice-recognition-ready', handleVoiceRecognitionReady); // Desregistrar o evento
+  socket.off('voice-recognition-ready', handleVoiceRecognitionReady);
 };
 
 onMounted(() => {

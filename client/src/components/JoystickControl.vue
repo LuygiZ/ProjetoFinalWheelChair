@@ -38,12 +38,11 @@ export default {
       this.joystick = nipplejs.create(options);
 
       this.joystick.on('move', (evt, data) => {
-        const distance = Math.min(data.distance, 50); // Limitar a distância do movimento
+        const distance = Math.min(data.distance, 50); 
         const angle = data.angle.radian;
         const x = Math.cos(angle) * distance;
-        const y = -Math.sin(angle) * distance; // Inverter o valor de y
+        const y = -Math.sin(angle) * distance; 
 
-        // Aplicar transform diretamente no joystick usando nipplejs
         const nippleElement = this.joystick[0].ui.front;
         nippleElement.style.transform = `translate(${x}px, ${y}px)`;
 
@@ -66,20 +65,20 @@ export default {
           }
           if (command) {
             this.sendDirectionToServer({ command });
-            this.$emit('command', command); // Emitir evento com o comando
+            this.$emit('command', command);
           }
         }
       });
 
       this.joystick.on('end', () => {
         this.sendDirectionToServer({ command: 'stop' });
-        this.$emit('command', 'stop'); // Emitir evento de parada
+        this.$emit('command', 'stop'); 
         this.resetJoystickVisual();
       });
     },
     sendDirectionToServer(data) {
-      console.log('Sending data:', data); // Log de depuração
-      //axios.post('http://192.168.50.236:3000/direcao', data)
+      console.log('Sending data:', data);
+      //axios.post('http://192.168.50.236:3000/direcao', data)   //substituir pelo IP correto do raspberry pi
       axios.post('http://localhost:3000/direcao', data)
         .then(response => {
           console.log('Response from server:', response.data);
@@ -133,12 +132,12 @@ export default {
       }
       if (command) {
         this.sendDirectionToServer({ command });
-        this.$emit('command', command); // Emitir evento com o comando
+        this.$emit('command', command); 
       }
     },
     handleKeyUp() {
       this.sendDirectionToServer({ command: 'stop' });
-      this.$emit('command', 'stop'); // Emitir evento "parar"
+      this.$emit('command', 'stop');
       this.resetJoystickVisual();
       this.activeKey = null;
     },
@@ -186,7 +185,6 @@ export default {
   border-radius: 10px;
   font-size: 24px;
   cursor: pointer;
-  /* Adiciona um cursor de ponteiro para indicar que é clicável */
 }
 
 .key.active {

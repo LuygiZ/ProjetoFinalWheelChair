@@ -1,5 +1,5 @@
 const express = require('express');
-const { spawn, exec } = require('child_process'); // Add 'exec' to run shell commands
+const { spawn, exec } = require('child_process'); 
 const cors = require('cors');
 
 const app = express();

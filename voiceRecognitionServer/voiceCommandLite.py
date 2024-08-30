@@ -48,10 +48,10 @@ interpreter.allocate_tensors()
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
 
-# Mapeamento de índices para palavras
+# Mapeamento de índices das palavras
 actions = ["frente", "tras", "esquerda", "direita", "mais", "menos", "parar", "rodar"]
 
-# Função para fazer previsão
+# Função para fazer previsão dos comandos com base no modelo
 def predict_action(audio, sr):
     mel_spectrogram = preprocess_audio(audio, sr)
     mel_spectrogram = np.expand_dims(mel_spectrogram, axis=0)
@@ -67,7 +67,7 @@ def predict_action(audio, sr):
 
 # Função para enviar o comando ao servidor
 def send_command_to_server(action):
-    url = 'http://localhost:3000/direcao'  # URL do servidor
+    url = 'http://localhost:3000/direcao'  # URL do servidor (substituir pelo correto)
     data = {'direcao': action, 'source': 'voice'}
     try:
         response = requests.post(url, json=data)
@@ -83,7 +83,7 @@ chunk = 1024
 form = pyaudio.paInt16
 channels = 1
 rate = 44100
-threshold = 500  # Ajuste conforme necessário
+threshold = 500  # Ajustar conforme necessário, se detetar demasiado som deve se aumentar
 silence_duration = 0.5
 silence_chunks = int(silence_duration * rate / chunk)
 

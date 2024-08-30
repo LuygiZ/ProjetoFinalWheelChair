@@ -37,14 +37,14 @@ export default {
     const isReversing = ref(false);
     const movementInterval = ref(null);
 
-    //const socket = io('http://192.168.50.236:3000');  // Substitua pelo IP do seu Raspberry Pi
-    const socket = io('http://localhost:3000');  // Substitua pelo IP do seu Raspberry Pi
+    //const socket = io('http://192.168.50.236:3000');  // Substituir pelo IP do seu Raspberry Pi
+    const socket = io('http://localhost:3000');  // Substituir pelo IP do seu Raspberry Pi
 
     onMounted(() => {
       updateContainerSize();
       window.addEventListener('resize', updateContainerSize);
 
-      // Ouvir os comandos do servidor
+      // Receber comandos do servidor
       socket.on('direcao_voice', (command) => {
         console.log(`Comando de voz recebido: ${command}`);
         handleVoiceCommand(command);
@@ -68,11 +68,11 @@ export default {
     };
 
     const getOrientation = () => {
-      const normalizedAngle = (angle.value % 360 + 360) % 360; // Normalize angle to be between 0 and 360
-      if (normalizedAngle === 0) return 'Para Cima'; // Norte
-      if (normalizedAngle === 90) return 'Para Direita'; // Leste
-      if (normalizedAngle === 180) return 'Para Baixo'; // Sul
-      if (normalizedAngle === 270) return 'Para Esquerda'; // Oeste
+      const normalizedAngle = (angle.value % 360 + 360) % 360; 
+      if (normalizedAngle === 0) return 'Para Cima'; 
+      if (normalizedAngle === 90) return 'Para Direita'; 
+      if (normalizedAngle === 180) return 'Para Baixo'; 
+      if (normalizedAngle === 270) return 'Para Esquerda'; 
       return 'Parado';
     };
 
@@ -130,7 +130,7 @@ export default {
           angle.value += 90;
           break;
         case 'stop':
-          return; // Não faz nada ao parar
+          return; 
       }
 
       if (newX >= -containerWidth.value / 2 && newX <= containerWidth.value / 2 && newY >= -containerHeight.value / 2 && newY <= containerHeight.value / 2) {
@@ -271,15 +271,11 @@ export default {
 <style scoped>
 #arrow-container {
   width: calc(100% - 220px);
-  /* Ajustar para acomodar o menu lateral */
   height: calc(100vh - 56px);
-  /* Ajustar para acomodar a altura da barra de navegação */
   border: 1px solid black;
   position: absolute;
   top: 56px;
-  /* Ajustar para abaixo da barra de navegação */
   left: 220px;
-  /* Ajustar para a direita do menu lateral */
   overflow: hidden;
 }
 

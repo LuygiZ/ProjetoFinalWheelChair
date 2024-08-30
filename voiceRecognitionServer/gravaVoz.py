@@ -9,7 +9,7 @@ def cria_pastas():
         os.makedirs(pasta, exist_ok=True)
 
 def is_silence(data, threshold):
-    # Verifica se o nível de som é menor que o limiar
+    # Verificar se o nível de som é menor que o threshold
     return np.max(np.abs(np.frombuffer(data, np.int16))) < threshold
 
 def grava_audio(filepath, threshold=500, chunk=1024, form=pyaudio.paInt16, channels=1, rate=44100, silence_duration=0.5):
