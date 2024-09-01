@@ -9,16 +9,16 @@
 
     <div id="arrow-controls">
       <div class="row">
-        <div class="key" :class="{ active: activeKey === 'ArrowUp' }" @mousedown="handleKeyDown({ key: 'ArrowUp' })"
-          @mouseup="handleKeyUp">↑</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowUp' }" @mousedown="handleMouseDown('ArrowUp')"
+          @mouseup="handleMouseUp">↑</div>
       </div>
       <div class="row">
-        <div class="key" :class="{ active: activeKey === 'ArrowLeft' }" @mousedown="handleKeyDown({ key: 'ArrowLeft' })"
-          @mouseup="handleKeyUp">←</div>
-        <div class="key" :class="{ active: activeKey === 'ArrowDown' }" @mousedown="handleKeyDown({ key: 'ArrowDown' })"
-          @mouseup="handleKeyUp">↓</div>
-        <div class="key" :class="{ active: activeKey === 'ArrowRight' }" @mousedown="handleKeyDown({ key: 'ArrowRight' })"
-          @mouseup="handleKeyUp">→</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowLeft' }" @mousedown="handleMouseDown('ArrowLeft')"
+          @mouseup="handleMouseUp">←</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowDown' }" @mousedown="handleMouseDown('ArrowDown')"
+          @mouseup="handleMouseUp">↓</div>
+        <div class="key" :class="{ active: activeKey === 'ArrowRight' }" @mousedown="handleMouseDown('ArrowRight')"
+          @mouseup="handleMouseUp">→</div>
       </div>
     </div>
 
@@ -36,8 +36,7 @@ import io from 'socket.io-client';
 import JoystickControl from '../components/JoystickControl.vue';
 import ArrowSimulator from '../components/ArrowSimulator.vue';
 
-//const socket = io('http://192.168.50.236:3000'); // Ajustar para o IP correto do Raspberry Pi
-const socket = io('http://localhost:3000/direcao'); // Ajustar para o IP correto do Raspberry Pi
+const socket = io('http://localhost:3000/direcao'); // Certifique-se que o IP está correto
 
 const speed = ref(1); // Velocidade inicial
 const arrowSimulator = ref(null);
@@ -50,16 +49,30 @@ const updateSpeed = (newSpeed) => {
 };
 
 const handleCommand = (command) => {
+  console.log(`Enviando comando: ${command} com velocidade: ${speed.value}`);
   if (arrowSimulator.value) {
     arrowSimulator.value.updatePosition(command);
     currentOrientation.value = arrowSimulator.value.getOrientation();
   }
+  // Emitir o comando para o servidor via socket
+  socket.emit('command', { command, speed: speed.value });
 };
 
-const handleKeyDown = (event) => {
+const sendDirectionToServer = (data) => {
+  console.log('Sending data:', data);
+  axios.post('http://localhost:3000/direcao', data)
+    .then(response => {
+      console.log('Response from server:', response.data);
+    })
+    .catch(error => {
+      console.error('Error sending data:', error);
+    });
+};
+
+const handleMouseDown = (key) => {
   let command = null;
-  activeKey.value = event.key;
-  switch (event.key) {
+  activeKey.value = key;
+  switch (key) {
     case 'ArrowUp':
       command = 'forward';
       break;
@@ -75,11 +88,13 @@ const handleKeyDown = (event) => {
   }
   if (command) {
     handleCommand(command);
+    sendDirectionToServer({ command }); // Send the command to the server
   }
 };
 
-const handleKeyUp = () => {
+const handleMouseUp = () => {
   handleCommand('stop');
+  sendDirectionToServer({ command: 'stop' }); // Send the stop command to the server
   activeKey.value = null;
 };
 
@@ -111,13 +126,24 @@ const handleVoiceRecognitionReady = (message) => {
 };
 
 onMounted(() => {
+  socket.on('connect', () => {
+    console.log('Conectado ao servidor via Socket.io');
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Desconectado do servidor');
+  });
+
   socket.on('voice-recognition-ready', handleVoiceRecognitionReady);
 });
 
 onUnmounted(() => {
   socket.off('voice-recognition-ready', handleVoiceRecognitionReady);
+  socket.off('connect');
+  socket.off('disconnect');
 });
 </script>
+
 
 <style>
 #current-orientation {
