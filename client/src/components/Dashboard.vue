@@ -1,7 +1,7 @@
 <template>
   <div>
     <JoystickControl @speedChange="updateSpeed" @command="handleCommand" />
-    <ArrowSimulator ref="arrowSimulator" :speed="speed" />
+    <ArrowSimulator ref="arrowSimulator" :speed="speed" @updateOrientation="currentOrientation = $event" />
 
     <div id="current-orientation">
       <span>Orientação Atual: {{ currentOrientation }}</span>
@@ -52,7 +52,7 @@ const handleCommand = (command) => {
   console.log(`Enviando comando: ${command} com velocidade: ${speed.value}`);
   if (arrowSimulator.value) {
     arrowSimulator.value.updatePosition(command);
-    currentOrientation.value = arrowSimulator.value.getOrientation();
+    currentOrientation.value = arrowSimulator.value.getOrientation(command);
   }
   // Emitir o comando para o servidor via socket
   socket.emit('command', { command, speed: speed.value });
@@ -135,15 +135,23 @@ onMounted(() => {
   });
 
   socket.on('voice-recognition-ready', handleVoiceRecognitionReady);
+
+  // Adicionando ouvinte para comandos de voz
+  socket.on('voice-command', (command) => {
+    console.log(`Comando de voz recebido: ${command}`);
+    handleCommand(command); // Atualiza a orientação e envia o comando ao servidor
+    sendDirectionToServer({ command }); // Envia o comando ao servidor
+    currentOrientation.value = arrowSimulator.value.getOrientation(command); // Atualiza a orientação atual
+  });
 });
 
 onUnmounted(() => {
   socket.off('voice-recognition-ready', handleVoiceRecognitionReady);
+  socket.off('voice-command'); // Remover o ouvinte de comandos de voz
   socket.off('connect');
   socket.off('disconnect');
 });
 </script>
-
 
 <style>
 #current-orientation {

@@ -103,7 +103,7 @@ chunk = 2048
 form = pyaudio.paInt16
 channels = 1
 rate = 44100
-threshold = 8000 
+threshold = 8000 #alterar quando necessário e ter em conta o microfone
 silence_duration = 0.5
 silence_chunks = int(silence_duration * rate / chunk)
 

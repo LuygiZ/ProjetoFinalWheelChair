@@ -37,7 +37,6 @@ export default {
     const isReversing = ref(false);
     const movementInterval = ref(null);
 
-    //const socket = io('http://192.168.50.236:3000');  // Substituir pelo IP do seu Raspberry Pi
     const socket = io('http://localhost:3000');  // Substituir pelo IP do seu Raspberry Pi
 
     onMounted(() => {
@@ -48,6 +47,7 @@ export default {
       socket.on('direcao_voice', (command) => {
         console.log(`Comando de voz recebido: ${command}`);
         handleVoiceCommand(command);
+        emit('updateOrientation', getOrientation(command)); // Emitir a orientação atualizada para o componente pai
       });
     });
 
@@ -67,7 +67,10 @@ export default {
       containerHeight.value = container.clientHeight;
     };
 
-    const getOrientation = () => {
+    const getOrientation = (command = null) => {
+      if (command === 'backward') {
+        return 'Para Trás';
+      }
       const normalizedAngle = (angle.value % 360 + 360) % 360; 
       if (normalizedAngle === 0) return 'Para Cima'; 
       if (normalizedAngle === 90) return 'Para Direita'; 
@@ -87,12 +90,10 @@ export default {
         stopReversing();
       }
 
-      const orientation = getOrientation();
-
       // Calcular os deslocamentos com base na orientação atual da seta
       switch (direction) {
         case 'forward':
-          switch (orientation) {
+          switch (getOrientation()) {
             case 'Para Cima':
               newY -= step;
               break;
@@ -108,7 +109,7 @@ export default {
           }
           break;
         case 'backward':
-          switch (orientation) {
+          switch (getOrientation()) {
             case 'Para Cima':
               newY += step;
               break;
